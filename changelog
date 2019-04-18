@@ -1,3 +1,9 @@
+remake (1:0.7.1-292) lucid; urgency=low
+
+  * Added Qt5 support
+  
+ -- Oskar Roesler <o.roesler@oscloud.info>  Thu, 18 Apr 2018 15:45:00 +0100
+ 
 remake (1:0.7.1-291) lucid; urgency=low
 
   * Fixed bug in gendocs configuration which was caused by renaming the
