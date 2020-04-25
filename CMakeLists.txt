@@ -14,8 +14,9 @@ remake_project(
   SUMMARY "A set of CMake macros for restructuring GNU Automake/Autoconf projects."
   AUTHOR "Ralf Kaestner"
   AUTHOR "Dizan Vasquez"
-  CONTACT "ralf.kaestner@gmail.com"
-  HOME "http://github.com/kralf/remake"
+  AUTHOR "Oskar Roesler"
+  CONTACT "oskar.roesler@cjtrobitics.de"
+  HOME "http://github.com/cjtrobotics/remake"
   LICENSE "GNU Lesser General Public License (LGPL)"
   INSTALL /usr
   README README.md
