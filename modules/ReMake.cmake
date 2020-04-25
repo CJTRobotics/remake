@@ -18,10 +18,29 @@
 #    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ############################################################################
 
+### \brief ReMake convenience macros
+#   ReMake provides a set of CMake macros that have originally been written to
+#   facilitate the restructuring of GNU Automake/Autoconf projects.
+#
+#   A key feature of ReMake is its branching concept. A branch is defined
+#   along with a list of dependencies that is automatically resolved
+#   by ReMake.
+#
+#   ReMake requires CMake version 2.6.2 or higher.
+
+include(ReMakePrivate)
+
+if(NOT DEFINED REMAKE_CMAKE)
+  remake_set(REMAKE_CMAKE ON)
+else(NOT DEFINED REMAKE_CMAKE)
+  return()
+endif(NOT DEFINED REMAKE_CMAKE)
+
 include(ReMakeProject)
 include(ReMakeBranch)
 include(ReMakeComponent)
 include(ReMakeDebian)
+include(ReMakeOSX)
 include(ReMakeFind)
 include(ReMakeFile)
 include(ReMakeGenerate)
@@ -41,22 +60,6 @@ include(ReMakeSVN)
 include(ReMakeGit)
 include(ReMakeTest)
 include(ReMakeVersion OPTIONAL)
-
-include(ReMakePrivate)
-
-### \brief ReMake convenience macros
-#   ReMake provides a set of CMake macros that have originally been written to
-#   facilitate the restructuring of GNU Automake/Autoconf projects.
-#
-#   A key feature of ReMake is its branching concept. A branch is defined
-#   along with a list of dependencies that is automatically resolved
-#   by ReMake.
-#
-#   ReMake requires CMake version 2.6.2 or higher.
-
-if(NOT DEFINED REMAKE_CMAKE)
-  remake_set(REMAKE_CMAKE ON)
-endif(NOT DEFINED REMAKE_CMAKE)
 
 ### \brief Set the minimum required version of ReMake for a module.
 #   In analogy to CMake's cmake_minimum_required() macro, this macro
@@ -383,7 +386,7 @@ macro(remake_add_executable remake_name)
     if(remake_force_link)
       remake_list_push(remake_link -Wl,-no-as-needed ${remake_force_link})
     endif(remake_force_link)
-    
+
     remake_component_build(
       EXECUTABLE ${remake_name}${remake_suffix}
       ${remake_sources} ${remake_target_sources} ${remake_generated}
@@ -470,7 +473,7 @@ endmacro(remake_add_executables)
 #     shall be excluded from the list of header files, defaulting to
 #     CMakeLists.txt.
 #   \optional[option] RECURSE If this option is given, header files will
-#     be searched recursively in and below the directory specified by the 
+#     be searched recursively in and below the directory specified by the
 #     FROM argument. In addtion, for each header the install destination
 #     will be appended by its relative-path location below the search
 #     directory.
@@ -772,7 +775,7 @@ macro(remake_add_files)
         "${remake_globs}")
       string(REPLACE ";" ";EXCLUDE;PATTERN;" remake_files_exclude
         "${remake_exclude}")
-    
+
       remake_component_install(
         DIRECTORY .
         DESTINATION ${remake_install}
@@ -809,7 +812,7 @@ macro(remake_add_directories)
     globs ${ARGN})
   remake_set(remake_component SELF DEFAULT ${REMAKE_COMPONENT})
   remake_set(remake_globs SELF DEFAULT *)
-  
+
   if(remake_if)
     remake_set(remake_option FROM ${remake_if})
   else(remake_if)
@@ -921,15 +924,16 @@ endmacro(remake_add_documentation)
 #   This macro adds a package build target, using the requested generator
 #   for package generation. Additional arguments passed to the macro are
 #   forwarded to the selected generator.
+#   \required[option] DEBIAN The platform for which to add the package
+#     build target.
 #   \optional[var] GENERATOR:generator The generator to be used for package
-#     generation, defaults to DEB.
+#     generation, defaults to DEB for the DEBIAN platform.
 #   \required[list] arg The arguments to be forwared to the package
 #     generator. See ReMakePack for details.
 #   \optional[value] IF:variable The name of a variable that conditions
 #     package generation.
-macro(remake_add_package)
-  remake_arguments(PREFIX remake_ VAR GENERATOR VAR IF ARGN args ${ARGN})
-  remake_set(remake_generator SELF DEFAULT DEB)
+macro(remake_add_package remake_platform)
+  remake_arguments(PREFIX remake_ OPTION GENERATOR VAR IF ARGN args ${ARGN})
 
   if(remake_if)
     remake_set(remake_option FROM ${remake_if})
@@ -938,11 +942,48 @@ macro(remake_add_package)
   endif(remake_if)
 
   if(remake_option)
-    if(${remake_generator} STREQUAL "DEB")
-      remake_pack_deb(${remake_args})
-    endif(${remake_generator} STREQUAL "DEB")
+    if(${remake_platform} STREQUAL "DEBIAN")
+      remake_set(remake_generator SELF DEFAULT DEB)
+
+      if(${remake_generator} STREQUAL "DEB")
+        remake_debian_pack_deb(${remake_args})
+      else(${remake_generator} STREQUAL "DEB")
+        message(FATAL_ERROR
+          "Unknown Debian package generator: ${remake_generator}")
+      endif(${remake_generator} STREQUAL "DEB")
+    else(${remake_platform} STREQUAL "DEBIAN")
+      message(FATAL_ERROR "Unknown platform: ${remake_platform}")
+    endif(${remake_platform} STREQUAL "DEBIAN")
   endif(remake_option)
 endmacro(remake_add_package)
+
+### \brief Add a distribution target.
+#   This macro adds a source distribution target, using the requested
+#   generator for distribution generation. Additional arguments passed
+#   to the macro are forwarded to the selected generator.
+#   \required[option] DEBIAN The platform for which to add the distribution
+#     target.
+#   \required[list] arg The arguments to be forwared to the distribution
+#     generator. See ReMakeDistribute for details.
+#   \optional[value] IF:variable The name of a variable that conditions
+#     distribution generation.
+macro(remake_add_distribution remake_platform)
+  remake_arguments(PREFIX remake_ VAR IF ARGN args ${ARGN})
+
+  if(remake_if)
+    remake_set(remake_option FROM ${remake_if})
+  else(remake_if)
+    remake_set(remake_option ON)
+  endif(remake_if)
+
+  if(remake_option)
+    if(${remake_platform} STREQUAL "DEBIAN")
+      remake_debian_distribute(${remake_args})
+    else(${remake_platform} STREQUAL "DEBIAN")
+      message(FATAL_ERROR "Unknown platform: ${remake_platform}")
+    endif(${remake_platform} STREQUAL "DEBIAN")
+  endif(remake_option)
+endmacro(remake_add_distribution)
 
 ### \brief Add directories to the include path.
 #   This macro adds a list of directories to the compiler's include path.
