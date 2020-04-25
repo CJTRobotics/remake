@@ -165,7 +165,7 @@ endmacro(remake_arguments)
 ### \brief Generate a ReMake variable name from a list of strings.
 #   This macro is a helper macro to generate valid variable names from
 #   arbitrary strings. It replaces whitespace characters, scores, and CMake
-#   list separators by underscores and performs an upper-case conversion of 
+#   list separators by underscores and performs an upper-case conversion of
 #   the result.
 #   \required[value] variable The name of a variable to be assigned the
 #     generated variable name.
