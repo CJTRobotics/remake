@@ -1,6 +1,6 @@
 ############################################################################
-#    Copyright (C) 2013 by Ralf Kaestner                                   #
-#    ralf.kaestner@gmail.com                                               #
+#    Copyright (C) 2020 by Oskar Roesler                                   #
+#    oskar.roesler@cjtrobotics.de                                          #
 #                                                                          #
 #    This program is free software; you can redistribute it and#or modify  #
 #    it under the terms of the GNU General Public License as published by  #
@@ -37,7 +37,7 @@ endif(NOT DEFINED REMAKE_QT5_CMAKE)
 #     modules.
 macro(remake_qt5)
   remake_arguments(PREFIX qt5_ LIST REQUIRED ${ARGN})
-  
+
   if(NOT DEFINED QT5_FOUND)
     if(qt5_required)
       remake_find_package(Qt5 REQUIRED ${qt5_required} QUIET)
@@ -47,7 +47,7 @@ macro(remake_qt5)
   else(NOT DEFINED QT5_FOUND)
     include(FindQt5)
   endif(NOT DEFINED QT5_FOUND)
-  
+
   if(DEFINED QT5_FOUND AND NOT DEFINED QT5_MOC)
     remake_project_set(QT5_MOC ${QT5_FOUND} CACHE BOOL
       "Process Qt5 meta-objects.")
